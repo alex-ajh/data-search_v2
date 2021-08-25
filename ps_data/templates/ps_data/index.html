@@ -1,0 +1,75 @@
+{% extends 'ps_data/base.html' %}
+
+{% block navbar %} 
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'ps_data:ps_data_index' %}">
+                    검색 
+                </a>                
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'ps_data:ps_data_help' %}">
+                    도움말
+                </a>                
+            </li>
+        </ul>
+    </div>
+{% endblock %} 
+
+{% block content %}
+    <form action="" method="post">
+        {% csrf_token %}
+        <div class="row align-items-center justify-content-center">
+            <div class="col-auto"> 
+                {{ form.keyword }}
+            </div>
+        </div>
+    </form>
+    
+    <!-- <div class='d-flex justify-content-center'> 
+        상태 : {{search_status}} 
+    </div>
+    <br/> -->
+
+    {% if search_status == "search completed" %} 
+        <div class='d-flex justify-content-center'> 
+            총 검색 건수 <strong>{{search_count}}</strong> 개 
+        </div>
+        <br/>
+    {% endif %}
+
+    {% if search_status == "search completed" and search_count != 0 %} 
+        <div class='d-flex justify-content-center align-items-center'>
+            <div class="row"> 			                
+                <div class="col">
+                    <div> 
+                        <strong>검색 결과</strong>
+                    </div>
+                    <table class='table table-striped'> 
+                            <thead>
+                                <tr>
+                                    <td class='col-3'> 파일명 </td>                                        
+                                    <td class='col-1'> 파일용량 </td>
+                                    <td class='col-1'> 파일수정날짜 </td>
+                                    <td class='col-3'> 파일경로 </td>
+                                </tr>  
+                            </thead>                      
+                            <tbody>
+                                {% for result in search_list %}                       
+                                    <tr>
+                                        <td> {{ result.file }}</td>                                        
+                                        <td> {{ result.capacity_str }} MB</td>                                        
+                                        <td> {{ result.modified_date_str }}</td>                                        
+                                        <td> <a href="{{ result.path }}" download>{{ result.path }}</a></td>                                        
+                                    </tr>                        
+                                {% endfor %}
+                            </tbody>
+                    </table>                                                                          
+                </div>
+            </div>            
+        </div> 
+    {% endif %}
+
+
+{% endblock %} 

@@ -1,0 +1,110 @@
+{% extends 'ps_data/base.html' %}
+
+{% block navbar %} 
+	<div class="collapse navbar-collapse" id="navbarSupportedContent">
+		<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+			<li class="nav-item">
+				<a class="nav-link" href="{% url 'ps_data:ps_data_index' %}">
+					검색 
+				</a>                
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="{% url 'ps_data:ps_data_help' %}">
+					도움말
+				</a>                
+			</li>
+		</ul>
+	</div>
+{% endblock %} 
+
+{% block content %}
+{% load static %}
+<div> 
+	<strong>기본 사용법</strong> : 검색창에 키워드 입력후 엔터를 누름 
+</div>
+	<br/> 
+
+<div>
+	<strong>검색 옵션</strong>
+</div>
+<div class='d-flex justify-content-center' >
+	<table class='table table-striped'>
+		<thead>
+			<tr>
+				<td>
+					<strong>검색 유형</strong> 
+				</td>
+				<td>
+					<strong>검색 방법</strong>
+				</td>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>
+					2개 이상의 검색어  
+				</td>
+				<td>
+					<div>공백(스페이스바)</div>
+					<div>예제) 파일명에 "scanner", "보고서"가 있는 경우</div>
+					<div>
+						<img src="{% static 'ps_data/image/multi_keyword.jpg' %}" alt="">
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					파일 확장자 검색  
+				</td>
+				<td>
+					<div>.(파일 확장자)</div>
+					<div>예제) 파일명에 "scanner"가 있고 파일 확장자가 ppt일 경우</div> 
+					<div>
+						<img src="{% static 'ps_data/image/file_extension.jpg' %}" alt="">
+					</div> 
+				</td>
+			</tr>
+			<tr>
+				<td>
+					파일 용량으로 검색 
+				</td>
+				<td>
+					<div>size:>(xxMB) 또는 size:<(xxMB)</div>
+					<div>예제) 파일명에 "scanner"가 있고 파일 용량이 300KB이상이고 5MB이하일 경우</div>
+					<div> 
+						<img src="{% static 'ps_data/image/file_size.jpg' %}" alt="">
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					파일 수정 날짜로 검색 
+				</td>
+				<td>
+					<div>s_date:(연월일) 또는 e_date:(연월일)</div>
+					<div>예제) 파일명에 "scanner"가 있고 파일수정날짜가 2019년05월03일부터 2021년01월03일인 경우</div>
+					<div> 
+						<img src="{% static 'ps_data/image/file_date.jpg' %}" alt="">
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					특정 파일 경로에서 검색
+				</td>
+				<td>
+					<div>dir:(파일 경로)/   </div>
+					<div>예제)CS 산업용 미팅/2021년 폴더안의 파일 검색 </div>
+					<div>
+						<img src="{% static 'ps_data/image/file_dir.jpg' %}" alt="">
+					</div>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+
+<div>
+	* 위의 옵션들을 함께 사용할수 있음
+</div>
+{% endblock %} 
