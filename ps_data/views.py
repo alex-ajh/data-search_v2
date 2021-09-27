@@ -17,13 +17,13 @@ def index(request):
             print(f"keyword: {keyword}") 
             # helper.validate_keyword(keyword)
             query_cmd = helper.generate_query(keyword) 
-            print(f"query: {query_cmd}")
+            # print(f"query: {query_cmd}")
             # _ , collection = utils.get_db_handle()             
             client = MongoClient('localhost', 27017)
             search_db = client['file_search']
             collection = search_db['file_info_gcs_20210823']
             search_list = collection.find(query_cmd) 
-            search_count = search_list.count() 
+            # search_count = search_list.count() 
             search_status = "search completed"
         else: 
             search_status = "invalid form"

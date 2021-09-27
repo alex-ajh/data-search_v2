@@ -4,17 +4,17 @@ from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-secret_file = os.path.join(BASE_DIR, 'secrets.json')
+# secret_file = os.path.join(BASE_DIR, 'secrets.json')
 
-with open(secret_file) as f:
-    secrets = json.loads(f.read())
+# with open(secret_file) as f:
+#     secrets = json.loads(f.read())
 
-def get_secret(setting, secrets=secrets):
-    try:
-        return secrets[setting]
-    except KeyError:
-        error_msg = "Check the {} in secrets.json".format(setting)
-        raise ImproperlyConfigured(error_msg)
+# def get_secret(setting, secrets=secrets):
+#     try:
+#         return secrets[setting]
+#     except KeyError:
+#         error_msg = "Check the {} in secrets.json".format(setting)
+#         raise ImproperlyConfigured(error_msg)
 
 # SECRET_KEY = get_secret("SECRET_KEY")
 
@@ -22,7 +22,7 @@ SECRET_KEY = 'django-insecure-p-a3f=mb*&dch8idjmy0=is86zfv8flg4^v10s1wl#g8bsoq&a
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['10.4.1.65']
+ALLOWED_HOSTS = ['10.4.2.92', 'search.gcs']
 
 # Application definition
 
