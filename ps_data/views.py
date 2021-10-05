@@ -4,7 +4,12 @@ from django.shortcuts import render
 from ps_data.forms import SearchForm
 from . import utils 
 from . import helper 
+from django.contrib.auth.decorators import login_required
 
+def login(request): 
+    return render(request, 'ps_data/login.html')
+
+@login_required
 def index(request):  
     search_list = '' 
     search_status = ''
@@ -16,15 +21,18 @@ def index(request):
             keyword = str(search_form.cleaned_data['keyword'])  
             print(f"keyword: {keyword}") 
             # helper.validate_keyword(keyword)
-            query_cmd = helper.generate_query(keyword) 
+            query_cmd = helper.generate_query_v2(keyword) 
             # print(f"query: {query_cmd}")
             # _ , collection = utils.get_db_handle()             
-            client = MongoClient('localhost', 27017)
-            search_db = client['file_search']
-            collection = search_db['file_info_gcs_20210823']
-            search_list = collection.find(query_cmd) 
-            # search_count = search_list.count() 
-            search_status = "search completed"
+            if query_cmd == []: 
+                search_status = "invalid keyword"
+            else: 
+                client = MongoClient('localhost', 27017)
+                search_db = client['index_nrd']
+                collection = search_db['file_nrd']
+                search_list = collection.find(query_cmd) 
+                search_count = search_list.count() 
+                search_status = "search completed"
         else: 
             search_status = "invalid form"
     else:

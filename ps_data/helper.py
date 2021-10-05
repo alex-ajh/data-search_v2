@@ -62,6 +62,19 @@ def parse_keyword(keyword):
     # print(f"keyword parsing : {keyword_parsed}")
     return keyword_parsed 
 
+def parse_keyword_v2(keyword): 
+    keyword_str = str(keyword) 
+    keyword_split = keyword_str.split(' ') 
+    keyword_list = [] 
+
+    for token in keyword_split: 
+        if token == '': 
+            pass 
+        else: 
+            keyword_list.append(token) 
+    
+    return keyword_list
+     
 def generate_query(keyword): 
     keyword_parsed = parse_keyword(keyword) 
     
@@ -105,6 +118,18 @@ def generate_query(keyword):
             query_list.append({'path' : {'$regex' : value.replace('/','\\\\'), '$options':'i'} })
 
     return { '$and' : query_list}
+
+def generate_query_v2(keywords): 
+    keyword_list = parse_keyword_v2(keywords) 
+    
+    query_list = [] 
+
+    if keyword_list == []: 
+        return query_list 
+    else: 
+        for keyword in keyword_list:        
+            query_list.append({'file' : {'$regex' : str(keyword), '$options':'i'}})
+        return { '$and' : query_list}
     
 
 if __name__ == "__main__":

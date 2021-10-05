@@ -22,7 +22,7 @@ SECRET_KEY = 'django-insecure-p-a3f=mb*&dch8idjmy0=is86zfv8flg4^v10s1wl#g8bsoq&a
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['10.4.2.92', 'search.gcs']
+ALLOWED_HOSTS = ['10.4.2.92', 'search.nrd']
 
 # Application definition
 
@@ -105,3 +105,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_REDIRECT_URL = '/'
+
+LOGOUT_REDIRECT_URL = '/'
