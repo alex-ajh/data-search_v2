@@ -1,6 +1,7 @@
 import re
 import os
 import time
+import json 
 import timeit 
 import datetime
 from datetime import timedelta
@@ -119,9 +120,8 @@ def generate_query(keyword):
 
     return { '$and' : query_list}
 
-def generate_query_v2(keywords): 
+def generate_query_v2(keywords, group_name): 
     keyword_list = parse_keyword_v2(keywords) 
-    
     query_list = [] 
 
     if keyword_list == []: 
@@ -129,8 +129,22 @@ def generate_query_v2(keywords):
     else: 
         for keyword in keyword_list:        
             query_list.append({'file' : {'$regex' : str(keyword), '$options':'i'}})
+        query_list.append({'dept' : group_name})
         return { '$and' : query_list}
-    
+
+def search_log(group_name): 
+    group_name = str(group_name)
+    group_name = group_name.upper() 
+
+    with open("./ps_data/search_log.json", "r") as f: 
+        log_data = json.load(f) 
+
+    if group_name in log_data.keys(): 
+        log_data[group_name] += 1 
+
+    with open("./ps_data/search_log.json", "w") as f:
+        json.dump(log_data, f)
+
 
 if __name__ == "__main__":
     client = MongoClient('localhost', 27017)
