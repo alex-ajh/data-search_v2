@@ -24,21 +24,10 @@
 </div>
 	<br/> 
 
-<div>
-	<strong>검색 옵션</strong>
-</div>
+
 <div class='d-flex justify-content-center' >
 	<table class='table table-striped'>
-		<thead>
-			<tr>
-				<td>
-					<strong>검색 유형</strong> 
-				</td>
-				<td>
-					<strong>검색 방법</strong>
-				</td>
-			</tr>
-		</thead>
+		
 		<tbody>
 			<tr>
 				<td>
@@ -64,47 +53,20 @@
 					</div> 
 				</td>
 			</tr>
-			<tr>
-				<td>
-					파일 용량으로 검색 
-				</td>
-				<td>
-					<div>size:>(xxMB) 또는 size:<(xxMB)</div>
-					<div>예제) 파일명에 "scanner"가 있고 파일 용량이 300KB이상이고 5MB이하일 경우</div>
-					<div> 
-						<img src="{% static 'ps_data/image/file_size.jpg' %}" alt="">
-					</div>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					파일 수정 날짜로 검색 
-				</td>
-				<td>
-					<div>s_date:(연월일) 또는 e_date:(연월일)</div>
-					<div>예제) 파일명에 "scanner"가 있고 파일수정날짜가 2019년05월03일부터 2021년01월03일인 경우</div>
-					<div> 
-						<img src="{% static 'ps_data/image/file_date.jpg' %}" alt="">
-					</div>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					특정 파일 경로에서 검색
-				</td>
-				<td>
-					<div>dir:(파일 경로)/   </div>
-					<div>예제)CS 산업용 미팅/2021년 폴더안의 파일 검색 </div>
-					<div>
-						<img src="{% static 'ps_data/image/file_dir.jpg' %}" alt="">
-					</div>
-				</td>
-			</tr>
+		
 		</tbody>
 	</table>
 </div>
 
-<div>
-	* 위의 옵션들을 함께 사용할수 있음
+<br/> 
+
+<div> 
+	<strong>윈도우 탐색기에서 파일 Open</strong> : 검색 결과에서 "파일 경로" 링크를 클릭한 후, 윈도우 탐색기에 붙여넣기 
 </div>
+<br/>
+
+<div style="margin-top: 300px;"> 
+	최근 업데이트 날짜 : 2021-10-07
+</div>
+
 {% endblock %} 

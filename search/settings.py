@@ -18,11 +18,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECRET_KEY = get_secret("SECRET_KEY")
 
-SECRET_KEY = 'django-insecure-p-a3f=mb*&dch8idjmy0=is86zfv8flg4^v10s1wl#g8bsoq&a'
+SECRET_KEY = 'django-insecure-2u7!n()hqr$#3i^+*#2uzlr7^h$09)-nl0jgy$)ldde5l9z=-s'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['10.4.2.92', 'search.gcs']
+ALLOWED_HOSTS = ['10.4.2.92', 'search.park', 'park.search', 'localhost']
 
 # Application definition
 
@@ -105,3 +105,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_REDIRECT_URL = '/'
+
+LOGOUT_REDIRECT_URL = '/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, "static")

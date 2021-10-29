@@ -28,41 +28,33 @@
         </div>
     </form>
     
-    <!-- <div class='d-flex justify-content-center'> 
-        상태 : {{search_status}} 
-    </div>
-    <br/> -->
-
-    {% if search_status == "search completed" and search_count != "" %} 
+    {% if search_status == "invalid keyword" %} 
         <div class='d-flex justify-content-center'> 
-            총 검색 건수 <strong>{{search_count}}</strong> 개 
+            <strong> Keyword is not valid. </strong> 
         </div>
         <br/>
     {% endif %}
 
-    {% if search_status == "search completed" and search_count != 0 %} 
+    {% if search_status == "search completed" %} 
         <div class='d-flex justify-content-center align-items-center'>
-            <div class="row"> 			                
+            <div class="row "> 			                
                 <div class="col">
                     <div> 
                         <strong>검색 결과</strong>
                     </div>
+
                     <table class='table table-striped'> 
                             <thead>
-                                <tr>
-                                    <td class='col-3'> 파일명 </td>                                        
-                                    <td class='col-1'> 파일용량 </td>
-                                    <td class='col-1'> 파일수정날짜 </td>
-                                    <td class='col-3'> 파일경로 </td>
+                                <tr >
+                                    <td scope='col-3'> 파일명 </td>                                                                            
+                                    <td scope='col-3'> 파일경로 </td>
                                 </tr>  
                             </thead>                      
                             <tbody>
                                 {% for result in search_list %}                       
                                     <tr>
-                                        <td> {{ result.file }}</td>                                        
-                                        <td> {{ result.capacity_str }} MB</td>                                        
-                                        <td> {{ result.modified_date_str }}</td>                                        
-                                        <td> <a href="{{ result.path }}" download>{{ result.path|to_Y }}</a></td>                                        
+                                        <td> {{ result.file }}</td>                                                                                  
+                                        <td> <a href="#" onclick="clipboard('{{result.path|replace_slash}}')">{{ result.path }}</a></td>                                        
                                     </tr>                        
                                 {% endfor %}
                             </tbody>
@@ -70,7 +62,20 @@
                 </div>
             </div>            
         </div> 
+    
     {% endif %}
 
+    <script>
+        function clipboard(str) {
+            const textArea = document.createElement('textarea');
+            document.body.appendChild(textArea);
+            textArea.value = str
+            // textArea.value = str; 
+            textArea.select(); 
+            document.execCommand('copy'); 
+            document.body.removeChild(textArea);
+            alert("copied!");            
+        }
+    </script>
 
 {% endblock %} 

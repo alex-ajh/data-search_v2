@@ -1,0 +1,38 @@
+{% extends 'ps_data/base.html' %}
+{% load custom_tags %}
+
+{% block navbar %} 
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'ps_data:ps_data_index' %}">
+                    검색 
+                </a>                
+            </li>
+            <!-- <li class="nav-item">
+                <a class="nav-link" href="{% url 'ps_data:ps_data_help' %}">
+                    도움말
+                </a>                
+            </li> -->
+        </ul>
+    </div>
+{% endblock %} 
+
+{% block content %}
+<form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+    <table>
+    <tr>
+        <td>{{ form.username.label_tag }}</td>
+        <td>{{ form.username }}</td>
+    </tr>
+    <tr>
+        <td>{{ form.password.label_tag }}</td>
+        <td>{{ form.password }}</td>
+    </tr>
+    </table>
+    
+    <input type="submit" value="login">
+    <input type="hidden" name="next" value="{{ next }}">
+</form>
+{% endblock %} 

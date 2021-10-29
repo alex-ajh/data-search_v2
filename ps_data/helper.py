@@ -1,6 +1,7 @@
 import re
 import os
 import time
+import json 
 import timeit 
 import datetime
 from datetime import timedelta
@@ -62,6 +63,19 @@ def parse_keyword(keyword):
     # print(f"keyword parsing : {keyword_parsed}")
     return keyword_parsed 
 
+def parse_keyword_v2(keyword): 
+    keyword_str = str(keyword) 
+    keyword_split = keyword_str.split(' ') 
+    keyword_list = [] 
+
+    for token in keyword_split: 
+        if token == '': 
+            pass 
+        else: 
+            keyword_list.append(token) 
+    
+    return keyword_list
+     
 def generate_query(keyword): 
     keyword_parsed = parse_keyword(keyword) 
     
@@ -105,7 +119,32 @@ def generate_query(keyword):
             query_list.append({'path' : {'$regex' : value.replace('/','\\\\'), '$options':'i'} })
 
     return { '$and' : query_list}
-    
+
+def generate_query_v2(keywords, group_name): 
+    keyword_list = parse_keyword_v2(keywords) 
+    query_list = [] 
+
+    if keyword_list == []: 
+        return query_list 
+    else: 
+        for keyword in keyword_list:        
+            query_list.append({'file' : {'$regex' : str(keyword), '$options':'i'}})
+        query_list.append({'dept' : group_name})
+        return { '$and' : query_list}
+
+def search_log(group_name): 
+    group_name = str(group_name)
+    group_name = group_name.upper() 
+
+    with open("./ps_data/search_log.json", "r") as f: 
+        log_data = json.load(f) 
+
+    if group_name in log_data.keys(): 
+        log_data[group_name] += 1 
+
+    with open("./ps_data/search_log.json", "w") as f:
+        json.dump(log_data, f)
+
 
 if __name__ == "__main__":
     client = MongoClient('localhost', 27017)
