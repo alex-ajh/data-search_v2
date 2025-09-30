@@ -124,6 +124,12 @@ def generate_query_v2(keywords, group_name):
     keyword_list = parse_keyword_v2(keywords) 
     query_list = [] 
 
+    if group_name.upper() == 'MF': 
+        if group_name.islower(): 
+            group_name = 'mc' 
+        else: 
+            group_name = 'MC'
+
     if keyword_list == []: 
         return query_list 
     else: 

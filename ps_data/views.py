@@ -15,11 +15,16 @@ group_list = [
               'GCS', 
               'GM', 
               'GS', 
+              'IBU',
               'MF', 
-              'NRD', 
+              'NRD',
+              'OMD',
+              'ORD', 
               'PM', 
-              'SRD' 
-             ]
+              'RBU',
+              'RND',
+              'SRD'
+            ]
 
 def login(request): 
     return render(request, 'ps_data/login.html')
