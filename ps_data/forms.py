@@ -7,9 +7,14 @@ class SearchForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.label_suffix = ""  # Removes : as label suffix
-        self.fields['keyword'].widget.attrs['style'] = 'width:600px; height:30px;'
+        self.fields['keyword'].widget.attrs.update({
+            'class': 'form-control form-control-lg',
+            'placeholder': '검색어를 입력하세요...',
+            'autocomplete': 'off',
+            'id': 'id_keyword'
+        })
 
-    keyword = forms.CharField(max_length=100)
+    keyword = forms.CharField(max_length=100, required=False)
 
     # def clean_encoding_data(self): 
     #     data = self.cleaned_data['encoding_data'] 

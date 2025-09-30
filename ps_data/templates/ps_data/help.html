@@ -1,72 +1,291 @@
 {% extends 'ps_data/base.html' %}
+{% load static %}
 
-{% block navbar %} 
-	<div class="collapse navbar-collapse" id="navbarSupportedContent">
-		<ul class="navbar-nav me-auto mb-2 mb-lg-0">
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'ps_data:ps_data_index' %}">
-					검색 
-				</a>                
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'ps_data:ps_data_help' %}">
-					도움말
-				</a>                
-			</li>
-		</ul>
-	</div>
-{% endblock %} 
+{% block navbar %}
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'ps_data:ps_data_index' %}">
+                    <i class="bi bi-search"></i> 검색
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'ps_data:ps_data_help' %}" style="background: rgba(255, 255, 255, 0.15);">
+                    <i class="bi bi-question-circle"></i> 도움말
+                </a>
+            </li>
+        </ul>
+    </div>
+{% endblock %}
 
 {% block content %}
-{% load static %}
-<div> 
-	<strong>기본 사용법</strong> : 검색창에 키워드 입력후 엔터를 누름 
+<div class="help-container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-12">
+            <!-- Help Header -->
+            <div class="help-header text-center mb-5">
+                <h2 class="fw-bold mb-3">
+                    <i class="bi bi-book text-primary"></i> 파일 검색 시스템 사용 가이드
+                </h2>
+                <p class="text-muted">효율적인 파일 검색을 위한 가이드입니다</p>
+            </div>
+
+            <!-- Basic Usage Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-play-circle"></i> 기본 사용법
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="lead">검색창에 키워드를 입력하고 <kbd>Enter</kbd> 키를 누르거나 검색 버튼을 클릭하세요.</p>
+                </div>
+            </div>
+
+            <!-- Advanced Search Tips -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightbulb"></i> 고급 검색 팁
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="width: 30%;">검색 유형</th>
+                                    <th style="width: 70%;">사용 방법 및 예제</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <strong>다중 키워드 검색</strong>
+                                        <span class="badge bg-info ms-2">AND</span>
+                                    </td>
+                                    <td>
+                                        <p class="mb-2">공백(스페이스바)으로 구분</p>
+                                        <div class="example-box">
+                                            <code>scanner 보고서</code>
+                                            <small class="text-muted d-block mt-1">
+                                                → "scanner"와 "보고서"를 모두 포함하는 파일 검색
+                                            </small>
+                                        </div>
+                                        {% if 'multi_keyword.jpg' in static_files %}
+                                        <img src="{% static 'ps_data/image/multi_keyword.jpg' %}" alt="다중 키워드 예제" class="img-fluid mt-3 rounded">
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>확장자 검색</strong>
+                                        <span class="badge bg-warning text-dark ms-2">Extension</span>
+                                    </td>
+                                    <td>
+                                        <p class="mb-2">마침표(.)와 확장자명 입력</p>
+                                        <div class="example-box">
+                                            <code>scanner .ppt</code>
+                                            <small class="text-muted d-block mt-1">
+                                                → "scanner"를 포함하는 PPT 파일 검색
+                                            </small>
+                                        </div>
+                                        {% if 'file_extension.jpg' in static_files %}
+                                        <img src="{% static 'ps_data/image/file_extension.jpg' %}" alt="확장자 검색 예제" class="img-fluid mt-3 rounded">
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>날짜 범위 검색</strong>
+                                        <span class="badge bg-secondary ms-2">Date</span>
+                                    </td>
+                                    <td>
+                                        <p class="mb-2">시작일과 종료일 지정</p>
+                                        <div class="example-box">
+                                            <code>s_date:20210101 e_date:20211231</code>
+                                            <small class="text-muted d-block mt-1">
+                                                → 2021년 1월 1일부터 12월 31일까지 수정된 파일
+                                            </small>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>파일 크기 검색</strong>
+                                        <span class="badge bg-danger ms-2">Size</span>
+                                    </td>
+                                    <td>
+                                        <p class="mb-2">크기 조건 지정 (MB 단위)</p>
+                                        <div class="example-box">
+                                            <code>size:>5 size:<100</code>
+                                            <small class="text-muted d-block mt-1">
+                                                → 5MB 초과 100MB 미만 파일
+                                            </small>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Access Guide -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-folder-open"></i> 파일 접근 방법
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ol class="step-list">
+                        <li class="mb-3">
+                            <strong>경로 복사:</strong> 검색 결과에서 파일 경로 옆의
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                            버튼을 클릭
+                        </li>
+                        <li class="mb-3">
+                            <strong>탐색기 열기:</strong> Windows 탐색기를 실행
+                            <kbd>Win + E</kbd>
+                        </li>
+                        <li class="mb-3">
+                            <strong>경로 붙여넣기:</strong> 주소창에 복사한 경로를 붙여넣기
+                            <kbd>Ctrl + V</kbd>
+                        </li>
+                        <li>
+                            <strong>파일 열기:</strong> 해당 위치에서 파일을 확인하고 실행
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Shortcuts Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-keyboard"></i> 단축키
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <kbd>Enter</kbd> - 검색 실행
+                                </li>
+                                <li class="mb-2">
+                                    <kbd>Ctrl + A</kbd> - 검색어 전체 선택
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <kbd>Esc</kbd> - 검색어 지우기
+                                </li>
+                                <li class="mb-2">
+                                    <kbd>Tab</kbd> - 다음 항목으로 이동
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support Section -->
+            <div class="card shadow-sm mb-5">
+                <div class="card-body text-center">
+                    <h5 class="mb-3">
+                        <i class="bi bi-headset"></i> 도움이 필요하신가요?
+                    </h5>
+                    <p class="text-muted">시스템 사용 중 문제가 발생하면 IT 지원팀에 문의해주세요</p>
+                    <button class="btn btn-primary">
+                        <i class="bi bi-envelope"></i> 지원 요청
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center text-muted mt-5">
+                <small>
+                    <i class="bi bi-clock"></i> 최근 업데이트: 2021-10-07
+                </small>
+            </div>
+        </div>
+    </div>
 </div>
-	<br/> 
 
+<style>
+    .help-container {
+        padding: 2rem 1rem;
+    }
 
-<div class='d-flex justify-content-center' >
-	<table class='table table-striped'>
-		
-		<tbody>
-			<tr>
-				<td>
-					2개 이상의 검색어  
-				</td>
-				<td>
-					<div>공백(스페이스바)</div>
-					<div>예제) 파일명에 "scanner", "보고서"가 있는 경우</div>
-					<div>
-						<img src="{% static 'ps_data/image/multi_keyword.jpg' %}" alt="">
-					</div>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					파일 확장자 검색  
-				</td>
-				<td>
-					<div>.(파일 확장자)</div>
-					<div>예제) 파일명에 "scanner"가 있고 파일 확장자가 ppt일 경우</div> 
-					<div>
-						<img src="{% static 'ps_data/image/file_extension.jpg' %}" alt="">
-					</div> 
-				</td>
-			</tr>
-		
-		</tbody>
-	</table>
-</div>
+    .help-header {
+        padding: 2rem 0;
+    }
 
-<br/> 
+    .card {
+        border: none;
+        transition: transform 0.2s;
+    }
 
-<div> 
-	<strong>윈도우 탐색기에서 파일 Open</strong> : 검색 결과에서 "파일 경로" 링크를 클릭한 후, 윈도우 탐색기에 붙여넣기 
-</div>
-<br/>
+    .card:hover {
+        transform: translateY(-2px);
+    }
 
-<div style="margin-top: 300px;"> 
-	최근 업데이트 날짜 : 2021-10-07
-</div>
+    .card-header {
+        font-weight: 600;
+        padding: 1rem 1.25rem;
+    }
 
-{% endblock %} 
+    .example-box {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        border-left: 4px solid #0d6efd;
+        font-family: 'Courier New', monospace;
+    }
+
+    .step-list li {
+        padding-left: 0.5rem;
+    }
+
+    kbd {
+        background: #212529;
+        color: white;
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+    }
+
+    @media (max-width: 768px) {
+        .help-container {
+            padding: 1rem 0.5rem;
+        }
+
+        .table {
+            font-size: 0.875rem;
+        }
+
+        .example-box {
+            font-size: 0.875rem;
+        }
+    }
+</style>
+
+<script>
+    // Clear search input when ESC is pressed
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const searchInput = document.getElementById('id_keyword');
+            if (searchInput) {
+                searchInput.value = '';
+                searchInput.focus();
+            }
+        }
+    });
+</script>
+{% endblock %}

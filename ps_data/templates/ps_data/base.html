@@ -1,56 +1,175 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+    <title>파일 검색 시스템</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
     <link rel="stylesheet" type="text/css" href="{% static 'ps_data/css/bootstrap.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'ps_data/css/bootstrap-select.min.css' %}">
-    <script src="{% static 'ps_data/js/jquery-3.6.0.min.js' %}"></script>  
-    <script src="{% static 'ps_data/js/bootstrap.bundle.min.js' %}"></script>    
-    <script src="{% static 'ps_data/js/bootstrap.min.js' %}"></script>      
-    <script src="{% static 'ps_data/js/bootstrap-select.min.js' %}"></script>      
-    <script>       
+
+    <!-- jQuery -->
+    <script src="{% static 'ps_data/js/jquery-3.6.0.min.js' %}"></script>
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'ps_data/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'ps_data/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'ps_data/js/bootstrap-select.min.js' %}"></script>
+    <script>
        $(document).ready(function() { $('.selectpicker').selectpicker(); });
     </script>
 
     <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --hover-color: rgba(102, 126, 234, 0.1);
+            --text-muted: #6c757d;
+            --border-radius: 0.375rem;
+        }
 
-        .wrap_content {
-            margin-top: 20px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            margin: 0px;
-            background-color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
         }
 
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navbar-brand img {
+            filter: invert(100);
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            padding: 0.5rem 1rem !important;
+            border-radius: var(--border-radius);
+        }
+
+        .nav-link:hover {
+            color: white !important;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .wrap_content {
+            margin-top: 0;
+            min-height: calc(100vh - 70px);
+        }
+
+        #content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* Responsive navbar toggle */
+        .navbar-toggler {
+            border: none;
+            color: white;
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
+
+        /* Mobile responsive adjustments */
+        @media (max-width: 768px) {
+            .navbar-brand {
+                font-size: 1rem;
+            }
+
+            .navbar-brand img {
+                width: 24px;
+                height: 20px;
+            }
+
+            #content {
+                padding: 0 0.5rem;
+            }
+
+            .nav-link {
+                padding: 0.5rem !important;
+                margin: 0.25rem 0;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .navbar {
+                padding: 0.75rem 0;
+            }
+
+            .navbar-brand {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Animation for page transitions */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #content {
+            animation: fadeIn 0.3s ease;
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-md navbar-dark bg-primary .m-1">
+    <nav class="navbar navbar-expand-md navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="">                
-                <img src="{% static 'ps_data/image/search.svg' %}" alt="" width="30" height="24" class="d-inline-block align-text-top" style='filter: invert(100);'>
-                <!-- {{ group_name }}  -->
-                {% if group_name == "MF" %}
-                    MC
-                {% else %}
-                    {{ group_name }}
-                {% endif %}
-                문서중앙화 서버 검색
+            <a class="navbar-brand" href="{% url 'ps_data:ps_data_index' %}">
+                <img src="{% static 'ps_data/image/search.svg' %}" alt="" width="30" height="24" class="d-inline-block align-text-top">
+                <span>
+                    {% if group_name == "MF" %}
+                        MC
+                    {% else %}
+                        {{ group_name }}
+                    {% endif %}
+                    문서중앙화 서버 검색
+                </span>
             </a>
-            {% block navbar %} 
+
+            <!-- Mobile toggle button -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            {% block navbar %}
             {% endblock %}
         </div>
     </nav>
 
     <div class="wrap_content">
-        <div id="content" name="content" class="container">
+        <div id="content" name="content" class="container-fluid">
             {% block content %}
-            {% endblock %}        
+            {% endblock %}
         </div>
     </div>
 

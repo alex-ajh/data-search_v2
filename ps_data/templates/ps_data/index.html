@@ -1,81 +1,390 @@
 {% extends 'ps_data/base.html' %}
 {% load custom_tags %}
 
-{% block navbar %} 
+{% block navbar %}
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'ps_data:ps_data_index' %}">
-                    검색 
-                </a>                
+                    검색
+                </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'ps_data:ps_data_help' %}">
                     도움말
-                </a>                
+                </a>
             </li>
         </ul>
     </div>
-{% endblock %} 
+{% endblock %}
 
 {% block content %}
-    <form action="" method="post">
-        {% csrf_token %}
-        <div class="row align-items-center justify-content-center">
-            <div class="col-auto"> 
-                {{ form.keyword }}
+    <div class="search-container">
+        <form action="" method="post" id="searchForm">
+            {% csrf_token %}
+            <div class="row align-items-center justify-content-center">
+                <div class="col-lg-8 col-md-10 col-sm-12">
+                    <div class="input-group mb-3">
+                        {{ form.keyword }}
+                        <button class="btn btn-primary" type="submit" id="searchButton">
+                            <span id="searchText">검색</span>
+                            <span id="loadingSpinner" class="spinner-border spinner-border-sm d-none" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Search History Dropdown -->
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10 col-sm-12">
+                <div id="searchHistory" class="search-history d-none">
+                    <small class="text-muted">최근 검색어:</small>
+                    <div id="historyList" class="d-flex flex-wrap gap-2 mt-1"></div>
+                </div>
             </div>
         </div>
-    </form>
-    
-    {% if search_status == "invalid keyword" %} 
-        <div class='d-flex justify-content-center'> 
-            <strong> Keyword is not valid. </strong> 
+    </div>
+
+    {% if search_status == "invalid keyword" %}
+        <div class="alert alert-warning alert-dismissible fade show mx-auto" style="max-width: 600px;" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <strong>올바르지 않은 검색어입니다.</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        <br/>
     {% endif %}
 
-    {% if search_status == "search completed" %} 
-        <div class='d-flex justify-content-center align-items-center'>
-            <div class="row "> 			                
-                <div class="col">
-                    <div> 
-                        <strong>검색 결과</strong>
+    {% if search_status == "search completed" %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <!-- Search Results Header -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="mb-0">
+                                <strong>검색 결과</strong>
+                                <span class="badge bg-secondary ms-2">{{ search_count }}건</span>
+                                {% if use_mock_data %}
+                                    <span class="badge bg-warning text-dark ms-2">
+                                        <i class="bi bi-exclamation-triangle"></i> 데모 모드
+                                    </span>
+                                {% endif %}
+                            </h5>
+                            <small class="text-muted">
+                                검색 시간: {{ search_time }}초
+                                {% if use_mock_data %}
+                                    <br><i class="bi bi-info-circle"></i> MongoDB가 연결되지 않아 샘플 데이터를 표시합니다.
+                                {% endif %}
+                            </small>
+                        </div>
+
+                        <!-- Sort and Filter Options -->
+                        <div class="d-flex gap-2">
+                            <select class="form-select form-select-sm" id="sortBy" style="width: auto;">
+                                <option value="name">파일명순</option>
+                                <option value="date">날짜순</option>
+                                <option value="size">크기순</option>
+                            </select>
+                            <button class="btn btn-sm btn-outline-secondary" id="filterToggle">
+                                <i class="bi bi-funnel"></i> 필터
+                            </button>
+                        </div>
                     </div>
 
-                    <table class='table table-striped'> 
-                            <thead>
-                                <tr >
-                                    <td scope='col-3'> 파일명 </td>                                                                            
-                                    <td scope='col-3'> 파일경로 </td>
-                                </tr>  
-                            </thead>                      
+                    <!-- Filter Panel (Hidden by default) -->
+                    <div id="filterPanel" class="card mb-3 d-none">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">확장자</label>
+                                    <select class="form-select form-select-sm" id="filterExt">
+                                        <option value="">전체</option>
+                                        <option value="pdf">PDF</option>
+                                        <option value="doc">DOC/DOCX</option>
+                                        <option value="xls">XLS/XLSX</option>
+                                        <option value="ppt">PPT/PPTX</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">날짜 범위</label>
+                                    <input type="date" class="form-control form-control-sm" id="filterDate">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button class="btn btn-sm btn-primary d-block">필터 적용</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Responsive Table -->
+                    <div class="table-responsive">
+                        <table class='table table-hover table-striped align-middle'>
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope='col' style="width: 40%;">
+                                        <i class="bi bi-file-earmark"></i> 파일명
+                                    </th>
+                                    <th scope='col' style="width: 60%;">
+                                        <i class="bi bi-folder"></i> 파일경로
+                                    </th>
+                                </tr>
+                            </thead>
                             <tbody>
-                                {% for result in search_list %}                       
+                                {% for result in search_list %}
                                     <tr>
-                                        <td> {{ result.file }}</td>                                                                                  
-                                        <td> <a href="#" onclick="clipboard('{{result.path|replace_slash}}')">{{ result.path }}</a></td>                                        
-                                    </tr>                        
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-file-earmark-text me-2 text-primary"></i>
+                                                <div>
+                                                    <div class="text-truncate" style="max-width: 400px;" title="{{ result.file }}">
+                                                        {{ result.file }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <div class="text-truncate me-2" style="max-width: 500px;" title="{{ result.path }}">
+                                                    {{ result.path }}
+                                                </div>
+                                                <button class="btn btn-sm btn-outline-primary" onclick="clipboard('{{result.path|replace_slash}}', this)" title="경로 복사">
+                                                    <i class="bi bi-clipboard"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="2" class="text-center py-4">
+                                            <i class="bi bi-search fs-1 text-muted"></i>
+                                            <p class="text-muted mt-2">검색 결과가 없습니다.</p>
+                                        </td>
+                                    </tr>
                                 {% endfor %}
                             </tbody>
-                    </table>                                                                          
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if search_list.has_other_pages %}
+                        <nav aria-label="Search results pagination">
+                            <ul class="pagination justify-content-center">
+                                {% if search_list.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?keyword={{ keyword }}&page=1" aria-label="First">
+                                            <span aria-hidden="true">&laquo;&laquo;</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?keyword={{ keyword }}&page={{ search_list.previous_page_number }}">이전</a>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in search_list.paginator.page_range %}
+                                    {% if search_list.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > search_list.number|add:'-3' and num < search_list.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?keyword={{ keyword }}&page={{ num }}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if search_list.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?keyword={{ keyword }}&page={{ search_list.next_page_number }}">다음</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?keyword={{ keyword }}&page={{ search_list.paginator.num_pages }}" aria-label="Last">
+                                            <span aria-hidden="true">&raquo;&raquo;</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
                 </div>
-            </div>            
-        </div> 
-    
+            </div>
+        </div>
     {% endif %}
 
+    <!-- Toast Notification -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="copyToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-body">
+                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                경로가 클립보드에 복사되었습니다!
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .search-container {
+            padding: 2rem 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin-bottom: 2rem;
+            border-radius: 0 0 1rem 1rem;
+        }
+
+        #id_keyword {
+            border-radius: 0.375rem 0 0 0.375rem;
+            border: none;
+            padding: 0.75rem 1rem;
+            font-size: 1.1rem;
+        }
+
+        #searchButton {
+            border-radius: 0 0.375rem 0.375rem 0;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+            cursor: pointer;
+        }
+
+        .search-history {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .history-tag {
+            padding: 0.25rem 0.75rem;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .history-tag:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        @media (max-width: 768px) {
+            .table-responsive {
+                font-size: 0.875rem;
+            }
+
+            .search-container {
+                padding: 1rem 0;
+            }
+
+            #id_keyword {
+                font-size: 1rem;
+                padding: 0.5rem 0.75rem;
+            }
+
+            #searchButton {
+                padding: 0.5rem 1rem;
+            }
+        }
+
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+            border-width: 0.2em;
+        }
+
+        .text-truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+
     <script>
-        function clipboard(str) {
+        // Loading indicator
+        document.getElementById('searchForm').addEventListener('submit', function() {
+            document.getElementById('searchText').classList.add('d-none');
+            document.getElementById('loadingSpinner').classList.remove('d-none');
+            document.getElementById('searchButton').disabled = true;
+        });
+
+        // Clipboard function with toast notification
+        function clipboard(str, button) {
             const textArea = document.createElement('textarea');
             document.body.appendChild(textArea);
-            textArea.value = str
-            // textArea.value = str; 
-            textArea.select(); 
-            document.execCommand('copy'); 
+            textArea.value = str;
+            textArea.select();
+            document.execCommand('copy');
             document.body.removeChild(textArea);
-            alert("copied!");            
-        }
-    </script>
 
-{% endblock %} 
+            // Show toast
+            const toast = new bootstrap.Toast(document.getElementById('copyToast'));
+            toast.show();
+
+            // Change button icon temporarily
+            const originalHTML = button.innerHTML;
+            button.innerHTML = '<i class="bi bi-check"></i>';
+            button.classList.remove('btn-outline-primary');
+            button.classList.add('btn-success');
+
+            setTimeout(() => {
+                button.innerHTML = originalHTML;
+                button.classList.remove('btn-success');
+                button.classList.add('btn-outline-primary');
+            }, 1000);
+        }
+
+        // Search history management
+        function addToHistory(keyword) {
+            if (!keyword) return;
+
+            let history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+            history = history.filter(item => item !== keyword);
+            history.unshift(keyword);
+            history = history.slice(0, 5); // Keep only last 5 searches
+
+            localStorage.setItem('searchHistory', JSON.stringify(history));
+            displayHistory();
+        }
+
+        function displayHistory() {
+            const history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+            const historyList = document.getElementById('historyList');
+            const historyContainer = document.getElementById('searchHistory');
+
+            if (history.length === 0) {
+                historyContainer.classList.add('d-none');
+                return;
+            }
+
+            historyContainer.classList.remove('d-none');
+            historyList.innerHTML = history.map(item =>
+                `<span class="history-tag" onclick="searchFromHistory('${item}')">${item}</span>`
+            ).join('');
+        }
+
+        function searchFromHistory(keyword) {
+            document.getElementById('id_keyword').value = keyword;
+            document.getElementById('searchForm').submit();
+        }
+
+        // Filter panel toggle
+        document.getElementById('filterToggle')?.addEventListener('click', function() {
+            const panel = document.getElementById('filterPanel');
+            panel.classList.toggle('d-none');
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            displayHistory();
+
+            // Add current search to history if exists
+            const currentKeyword = '{{ keyword }}';
+            if (currentKeyword) {
+                addToHistory(currentKeyword);
+            }
+        });
+    </script>
+{% endblock %}
