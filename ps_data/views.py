@@ -27,9 +27,7 @@ group_list = [
               'SRD'
             ]
 
-def login(request): 
-    return render(request, 'ps_data/login.html')
-
+@login_required
 def index(request):
     search_list = ''
     search_status = ''
