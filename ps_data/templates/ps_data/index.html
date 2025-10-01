@@ -107,23 +107,33 @@
                     <div id="filterPanel" class="card mb-3 d-none">
                         <div class="card-body">
                             <div class="row g-3">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label class="form-label">확장자</label>
                                     <select class="form-select form-select-sm" id="filterExt">
                                         <option value="">전체</option>
                                         <option value="pdf">PDF</option>
-                                        <option value="doc">DOC/DOCX</option>
-                                        <option value="xls">XLS/XLSX</option>
-                                        <option value="ppt">PPT/PPTX</option>
+                                        <option value="docx">DOCX</option>
+                                        <option value="doc">DOC</option>
+                                        <option value="xlsx">XLSX</option>
+                                        <option value="xls">XLS</option>
+                                        <option value="pptx">PPTX</option>
+                                        <option value="ppt">PPT</option>
+                                        <option value="txt">TXT</option>
+                                        <option value="jpg">JPG</option>
+                                        <option value="png">PNG</option>
                                     </select>
                                 </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">날짜 범위</label>
-                                    <input type="date" class="form-control form-control-sm" id="filterDate">
+                                <div class="col-md-3">
+                                    <label class="form-label">시작 날짜</label>
+                                    <input type="date" class="form-control form-control-sm" id="filterStartDate">
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
+                                    <label class="form-label">종료 날짜</label>
+                                    <input type="date" class="form-control form-control-sm" id="filterEndDate">
+                                </div>
+                                <div class="col-md-3">
                                     <label class="form-label">&nbsp;</label>
-                                    <button class="btn btn-sm btn-primary d-block">필터 적용</button>
+                                    <button class="btn btn-sm btn-primary d-block w-100" id="applyFilter">필터 적용</button>
                                 </div>
                             </div>
                         </div>
@@ -386,6 +396,41 @@
             panel.classList.toggle('d-none');
         });
 
+        // Apply filter functionality
+        document.getElementById('applyFilter')?.addEventListener('click', function() {
+            const baseKeyword = '{{ keyword }}'.split(' ').filter(word =>
+                !word.startsWith('.') &&
+                !word.startsWith('s_date:') &&
+                !word.startsWith('e_date:')
+            ).join(' ');
+
+            let filterKeyword = baseKeyword;
+
+            // Add extension filter
+            const ext = document.getElementById('filterExt').value;
+            if (ext) {
+                filterKeyword += ' .' + ext;
+            }
+
+            // Add date range filter
+            const startDate = document.getElementById('filterStartDate').value;
+            const endDate = document.getElementById('filterEndDate').value;
+
+            if (startDate) {
+                const sDate = startDate.replace(/-/g, '');
+                filterKeyword += ' s_date:' + sDate;
+            }
+
+            if (endDate) {
+                const eDate = endDate.replace(/-/g, '');
+                filterKeyword += ' e_date:' + eDate;
+            }
+
+            // Submit search with filters
+            document.getElementById('id_keyword').value = filterKeyword.trim();
+            document.getElementById('searchForm').submit();
+        });
+
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             displayHistory();
@@ -395,6 +440,35 @@
             if (currentKeyword) {
                 addToHistory(currentKeyword);
             }
+
+            // Parse current keyword to populate filters
+            const keywords = currentKeyword.split(' ');
+            keywords.forEach(word => {
+                if (word.startsWith('.')) {
+                    const ext = word.substring(1);
+                    const extSelect = document.getElementById('filterExt');
+                    if (extSelect) {
+                        for (let option of extSelect.options) {
+                            if (option.value === ext) {
+                                option.selected = true;
+                                break;
+                            }
+                        }
+                    }
+                } else if (word.startsWith('s_date:')) {
+                    const dateStr = word.substring(7); // Remove 's_date:'
+                    if (dateStr.length === 8) {
+                        const formatted = dateStr.substring(0,4) + '-' + dateStr.substring(4,6) + '-' + dateStr.substring(6,8);
+                        document.getElementById('filterStartDate').value = formatted;
+                    }
+                } else if (word.startsWith('e_date:')) {
+                    const dateStr = word.substring(7); // Remove 'e_date:'
+                    if (dateStr.length === 8) {
+                        const formatted = dateStr.substring(0,4) + '-' + dateStr.substring(4,6) + '-' + dateStr.substring(6,8);
+                        document.getElementById('filterEndDate').value = formatted;
+                    }
+                }
+            });
         });
     </script>
 {% endblock %}

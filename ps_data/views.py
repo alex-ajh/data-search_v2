@@ -64,9 +64,13 @@ def index(request):
             except:
                 pass
 
-            query_cmd = helper.generate_query_v2(keyword, group_name)
+            query_cmd = helper.generate_query(keyword)
 
-            if query_cmd == []:
+            # Add department filter
+            if '$and' in query_cmd and isinstance(query_cmd['$and'], list):
+                query_cmd['$and'].append({'dept': group_name})
+
+            if query_cmd == [] or query_cmd == {}:
                 search_status = "invalid keyword"
             else:
                 s_search = timeit.default_timer()
