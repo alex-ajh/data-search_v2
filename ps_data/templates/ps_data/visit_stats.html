@@ -1,0 +1,201 @@
+{% extends 'ps_data/base.html' %}
+
+{% block navbar %}
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'ps_data:ps_data_index' %}">
+                <i class="bi bi-house-door"></i> Home
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'ps_data:ps_data_help' %}">
+                <i class="bi bi-question-circle"></i> Help
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="{% url 'ps_data:visit_stats' %}">
+                <i class="bi bi-graph-up"></i> Visit Stats
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+        </li>
+    </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="text-center mb-4">
+                <i class="bi bi-bar-chart-line"></i> Visit Statistics
+            </h2>
+        </div>
+    </div>
+
+    <!-- Statistics Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0" style="border-left: 4px solid #667eea !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Visits</h6>
+                            <h2 class="mb-0">{{ total_visits|default:0 }}</h2>
+                        </div>
+                        <div class="text-primary" style="font-size: 2.5rem;">
+                            <i class="bi bi-eye"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0" style="border-left: 4px solid #764ba2 !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Pages Tracked</h6>
+                            <h2 class="mb-0">{{ page_count|default:0 }}</h2>
+                        </div>
+                        <div class="text-secondary" style="font-size: 2.5rem;">
+                            <i class="bi bi-file-earmark-text"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0" style="border-left: 4px solid #f093fb !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Average Visits</h6>
+                            <h2 class="mb-0">
+                                {% if page_count > 0 %}
+                                    {{ total_visits|floatformat:0|add:"0"|divisibleby:page_count|default:0 }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </h2>
+                        </div>
+                        <div style="color: #f093fb; font-size: 2.5rem;">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visit Details Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-table"></i> Page Visit Details
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" style="width: 5%">#</th>
+                                    <th scope="col" style="width: 45%">Page URL</th>
+                                    <th scope="col" style="width: 15%" class="text-center">Visit Count</th>
+                                    <th scope="col" style="width: 20%">Last Visited</th>
+                                    <th scope="col" style="width: 15%" class="text-center">Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if visit_counts %}
+                                    {% for visit in visit_counts %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>
+                                            <a href="{{ visit.page_url }}" class="text-decoration-none">
+                                                {{ visit.page_url }}
+                                            </a>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary rounded-pill">
+                                                {{ visit.count }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {{ visit.last_visited|date:"Y-m-d H:i:s" }}
+                                            </small>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar"
+                                                     role="progressbar"
+                                                     style="width: {% if total_visits > 0 %}{% widthratio visit.count total_visits 100 %}{% else %}0{% endif %}%;"
+                                                     aria-valuenow="{{ visit.count }}"
+                                                     aria-valuemin="0"
+                                                     aria-valuemax="{{ total_visits }}">
+                                                    {% if total_visits > 0 %}
+                                                        {% widthratio visit.count total_visits 100 %}%
+                                                    {% else %}
+                                                        0%
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5">
+                                            <i class="bi bi-inbox" style="font-size: 3rem; color: #dee2e6;"></i>
+                                            <p class="text-muted mt-3 mb-0">No visit data available yet</p>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(102, 126, 234, 0.05);
+    }
+
+    .progress {
+        background-color: #e9ecef;
+    }
+
+    .progress-bar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .badge {
+        font-weight: 500;
+        padding: 0.4em 0.8em;
+    }
+</style>
+{% endblock %}

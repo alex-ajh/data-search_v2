@@ -151,10 +151,45 @@ def help(request):
             group_name = ''
     else:
         # Use demo group for UI testing
-        group_name = 'DEMO' 
+        group_name = 'DEMO'
 
-    context = { 
-            "group_name" : group_name 
+    context = {
+            "group_name" : group_name
         }
 
     return render(request, 'ps_data/help.html', context)
+
+
+@login_required
+def visit_stats(request):
+    """View to display visit statistics"""
+    from .models import VisitCount
+
+    group_name = ''
+
+    # Set demo group if user is not authenticated or doesn't have groups
+    if hasattr(request.user, 'groups') and request.user.groups.exists():
+        group_name = request.user.groups.all()[0].name
+        if not group_name in group_list:
+            group_name = ''
+    else:
+        # Use demo group for UI testing
+        group_name = 'DEMO'
+
+    # Get all visit counts ordered by count (descending)
+    visit_counts = VisitCount.objects.all().order_by('-count')
+
+    # Get total visits across all pages
+    total_visits = VisitCount.get_total_visits()
+
+    # Get page count
+    page_count = visit_counts.count()
+
+    context = {
+        'visit_counts': visit_counts,
+        'total_visits': total_visits,
+        'page_count': page_count,
+        'group_name': group_name
+    }
+
+    return render(request, 'ps_data/visit_stats.html', context)

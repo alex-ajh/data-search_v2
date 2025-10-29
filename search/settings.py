@@ -44,6 +44,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'ps_data.middleware.VisitCountMiddleware',  # Track page visits
 ]
 
 ROOT_URLCONF = 'search.urls'
