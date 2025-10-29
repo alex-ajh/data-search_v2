@@ -38,6 +38,22 @@
         </div>
     </div>
 
+    <!-- Monthly Visit Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up"></i> Monthly Visit Trend (Last 12 Months)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyVisitChart" style="max-height: 400px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Statistics Summary Cards -->
     <div class="row mb-4">
         <div class="col-md-4 mb-3">
@@ -198,4 +214,116 @@
         padding: 0.4em 0.8em;
     }
 </style>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+    // Fetch monthly visit data and render chart
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch("{% url 'ps_data:visit_chart_data' %}")
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('monthlyVisitChart').getContext('2d');
+
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, 'rgba(102, 126, 234, 0.8)');
+                gradient.addColorStop(1, 'rgba(118, 75, 162, 0.2)');
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Monthly Visits',
+                            data: data.data,
+                            backgroundColor: gradient,
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#667eea',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointHoverBackgroundColor: '#764ba2',
+                            pointHoverBorderColor: '#fff',
+                            pointHoverBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    },
+                                    color: '#333',
+                                    padding: 20
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                titleFont: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    size: 13
+                                },
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Visits: ' + context.parsed.y;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1,
+                                    font: {
+                                        size: 12
+                                    },
+                                    color: '#666'
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)',
+                                    drawBorder: false
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: {
+                                        size: 12
+                                    },
+                                    color: '#666'
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching chart data:', error);
+                document.getElementById('monthlyVisitChart').parentElement.innerHTML =
+                    '<p class="text-center text-muted py-5">Unable to load chart data</p>';
+            });
+    });
+</script>
 {% endblock %}

@@ -193,3 +193,38 @@ def visit_stats(request):
     }
 
     return render(request, 'ps_data/visit_stats.html', context)
+
+
+@login_required
+def visit_chart_data(request):
+    """API endpoint to provide monthly visit data for charts"""
+    from django.http import JsonResponse
+    from .models import VisitRecord
+    from datetime import datetime, timedelta
+    from django.utils import timezone
+    import calendar
+
+    # Get monthly statistics for the last 12 months
+    monthly_stats = VisitRecord.get_monthly_stats(months=12)
+
+    # Prepare data for Chart.js
+    labels = []
+    data = []
+
+    # Create a dict for easy lookup
+    stats_dict = {stat['month'].strftime('%Y-%m'): stat['count'] for stat in monthly_stats}
+
+    # Generate last 12 months
+    end_date = timezone.now()
+    for i in range(11, -1, -1):
+        target_date = end_date - timedelta(days=i * 30)
+        month_key = target_date.strftime('%Y-%m')
+        month_label = target_date.strftime('%b %Y')  # e.g., "Jan 2024"
+
+        labels.append(month_label)
+        data.append(stats_dict.get(month_key, 0))
+
+    return JsonResponse({
+        'labels': labels,
+        'data': data
+    })

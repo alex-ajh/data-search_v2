@@ -35,6 +35,48 @@ class VisitCount(models.Model):
     def get_total_visits(cls):
         """Get total visits across all pages"""
         return cls.objects.aggregate(total=models.Sum('count'))['total'] or 0
+
+
+class VisitRecord(models.Model):
+    """Model to track individual visit records for analytics"""
+    page_url = models.CharField(max_length=255, help_text="URL path of the page", db_index=True)
+    visited_at = models.DateTimeField(auto_now_add=True, help_text="Visit timestamp", db_index=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True, help_text="Visitor IP address")
+    user_agent = models.TextField(null=True, blank=True, help_text="User agent string")
+
+    class Meta:
+        verbose_name = "Visit Record"
+        verbose_name_plural = "Visit Records"
+        ordering = ['-visited_at']
+        indexes = [
+            models.Index(fields=['page_url', 'visited_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.page_url} - {self.visited_at}"
+
+    @classmethod
+    def get_monthly_stats(cls, months=12):
+        """Get visit counts grouped by month for the last N months"""
+        from django.db.models import Count
+        from django.db.models.functions import TruncMonth
+        from datetime import datetime, timedelta
+        from django.utils import timezone
+
+        # Get date range
+        end_date = timezone.now()
+        start_date = end_date - timedelta(days=months * 30)
+
+        # Query visits grouped by month
+        monthly_data = cls.objects.filter(
+            visited_at__gte=start_date
+        ).annotate(
+            month=TruncMonth('visited_at')
+        ).values('month').annotate(
+            count=Count('id')
+        ).order_by('month')
+
+        return monthly_data
 # Unable to inspect table 'auth_group'
 # The error was: __new__() missing 1 required positional argument: 'collation'
 # Unable to inspect table 'auth_group_permissions'
