@@ -1,0 +1,465 @@
+{% extends 'ps_data/base.html' %}
+
+{% block navbar %}
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'ps_data:ps_data_index' %}">
+                <i class="bi bi-house-door"></i> Home
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'ps_data:ps_data_help' %}">
+                <i class="bi bi-question-circle"></i> Help
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'ps_data:visit_stats' %}">
+                <i class="bi bi-graph-up"></i> Visit Stats
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="{% url 'ps_data:search_stats' %}">
+                <i class="bi bi-search"></i> Search Stats
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+        </li>
+    </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="text-center mb-4">
+                <i class="bi bi-search"></i> Search Statistics
+            </h2>
+        </div>
+    </div>
+
+    <!-- Monthly Search Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up"></i> Monthly Search Trend (Last 12 Months)
+                        </h5>
+                        <div class="btn-group" role="group" aria-label="Filter options">
+                            <input type="radio" class="btn-check" name="filter" id="filterUser" value="user" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary btn-sm" for="filterUser">My Searches</label>
+
+                            <input type="radio" class="btn-check" name="filter" id="filterDept" value="department" autocomplete="off">
+                            <label class="btn btn-outline-primary btn-sm" for="filterDept">Department</label>
+
+                            <input type="radio" class="btn-check" name="filter" id="filterAll" value="all" autocomplete="off">
+                            <label class="btn btn-outline-primary btn-sm" for="filterAll">All</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlySearchChart" style="max-height: 400px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0" style="border-left: 4px solid #667eea !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Searches</h6>
+                            <h2 class="mb-0">{{ total_searches|default:0 }}</h2>
+                        </div>
+                        <div class="text-primary" style="font-size: 2.5rem;">
+                            <i class="bi bi-search"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0" style="border-left: 4px solid #764ba2 !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">My Searches</h6>
+                            <h2 class="mb-0">{{ user_searches|default:0 }}</h2>
+                        </div>
+                        <div class="text-secondary" style="font-size: 2.5rem;">
+                            <i class="bi bi-person"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0" style="border-left: 4px solid #f093fb !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Dept. Searches</h6>
+                            <h2 class="mb-0">{{ department_searches|default:0 }}</h2>
+                        </div>
+                        <div style="color: #f093fb; font-size: 2.5rem;">
+                            <i class="bi bi-building"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0" style="border-left: 4px solid #f6d365 !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Avg. Results</h6>
+                            <h2 class="mb-0">
+                                {% if user_stats.avg_results %}
+                                    {{ user_stats.avg_results|floatformat:0 }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </h2>
+                        </div>
+                        <div style="color: #f6d365; font-size: 2.5rem;">
+                            <i class="bi bi-file-earmark-text"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Keywords Section -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-trophy"></i> Top Search Keywords (Overall)
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" style="width: 10%">#</th>
+                                    <th scope="col" style="width: 60%">Keyword</th>
+                                    <th scope="col" style="width: 30%" class="text-center">Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if top_keywords %}
+                                    {% for item in top_keywords %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>
+                                            <strong>{{ item.keyword }}</strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary rounded-pill">
+                                                {{ item.count }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4">
+                                            <i class="bi bi-inbox" style="font-size: 2rem; color: #dee2e6;"></i>
+                                            <p class="text-muted mt-2 mb-0">No data available</p>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-star"></i> My Top Search Keywords
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" style="width: 10%">#</th>
+                                    <th scope="col" style="width: 60%">Keyword</th>
+                                    <th scope="col" style="width: 30%" class="text-center">Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if user_top_keywords %}
+                                    {% for item in user_top_keywords %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>
+                                            <strong>{{ item.keyword }}</strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success rounded-pill">
+                                                {{ item.count }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4">
+                                            <i class="bi bi-inbox" style="font-size: 2rem; color: #dee2e6;"></i>
+                                            <p class="text-muted mt-2 mb-0">No searches yet</p>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Searches Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> My Recent Searches
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" style="width: 5%">#</th>
+                                    <th scope="col" style="width: 30%">Keyword</th>
+                                    <th scope="col" style="width: 20%">Search Time</th>
+                                    <th scope="col" style="width: 15%" class="text-center">Results</th>
+                                    <th scope="col" style="width: 15%" class="text-center">Exec. Time</th>
+                                    <th scope="col" style="width: 15%">Department</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if recent_searches %}
+                                    {% for search in recent_searches %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>
+                                            <strong>{{ search.keyword }}</strong>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {{ search.searched_at|date:"Y-m-d H:i:s" }}
+                                            </small>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-info rounded-pill">
+                                                {{ search.result_count }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <small class="text-muted">{{ search.search_time }}s</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ search.department }}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5">
+                                            <i class="bi bi-inbox" style="font-size: 3rem; color: #dee2e6;"></i>
+                                            <p class="text-muted mt-3 mb-0">No search history available yet</p>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(102, 126, 234, 0.05);
+    }
+
+    .badge {
+        font-weight: 500;
+        padding: 0.4em 0.8em;
+    }
+
+    .btn-group .btn-check:checked + .btn {
+        background-color: #667eea;
+        border-color: #667eea;
+        color: white;
+    }
+</style>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+    let searchChart = null;
+
+    // Function to fetch and render chart
+    function renderSearchChart(filter = 'user') {
+        fetch("{% url 'ps_data:search_chart_data' %}?filter=" + filter)
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('monthlySearchChart').getContext('2d');
+
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, 'rgba(102, 126, 234, 0.8)');
+                gradient.addColorStop(1, 'rgba(118, 75, 162, 0.2)');
+
+                // Destroy existing chart if it exists
+                if (searchChart) {
+                    searchChart.destroy();
+                }
+
+                searchChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Monthly Searches',
+                            data: data.data,
+                            backgroundColor: gradient,
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#667eea',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointHoverBackgroundColor: '#764ba2',
+                            pointHoverBorderColor: '#fff',
+                            pointHoverBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    },
+                                    color: '#333',
+                                    padding: 20
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                titleFont: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    size: 13
+                                },
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Searches: ' + context.parsed.y;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1,
+                                    font: {
+                                        size: 12
+                                    },
+                                    color: '#666'
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)',
+                                    drawBorder: false
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: {
+                                        size: 12
+                                    },
+                                    color: '#666'
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching chart data:', error);
+                document.getElementById('monthlySearchChart').parentElement.innerHTML =
+                    '<p class="text-center text-muted py-5">Unable to load chart data</p>';
+            });
+    }
+
+    // Initial chart render
+    document.addEventListener('DOMContentLoaded', function() {
+        renderSearchChart('user');
+
+        // Add event listeners to filter buttons
+        document.querySelectorAll('input[name="filter"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                renderSearchChart(this.value);
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -113,6 +113,20 @@ def index(request):
                 search_time = round(e_search - s_search, 2)
                 print(f"search time : {search_time}")
 
+                # Record search event
+                if request.user.is_authenticated and not use_mock_data:
+                    from .models import SearchRecord
+                    try:
+                        SearchRecord.objects.create(
+                            keyword=keyword,
+                            user=request.user,
+                            department=group_name,
+                            result_count=search_count,
+                            search_time=search_time
+                        )
+                    except Exception as e:
+                        print(f"Failed to record search: {e}")
+
                 # Pagination
                 paginator = Paginator(search_list, 20)  # Show 20 results per page
                 try:
@@ -206,6 +220,115 @@ def visit_chart_data(request):
 
     # Get monthly statistics for the last 12 months
     monthly_stats = VisitRecord.get_monthly_stats(months=12)
+
+    # Prepare data for Chart.js
+    labels = []
+    data = []
+
+    # Create a dict for easy lookup
+    stats_dict = {stat['month'].strftime('%Y-%m'): stat['count'] for stat in monthly_stats}
+
+    # Generate last 12 months
+    end_date = timezone.now()
+    for i in range(11, -1, -1):
+        target_date = end_date - timedelta(days=i * 30)
+        month_key = target_date.strftime('%Y-%m')
+        month_label = target_date.strftime('%b %Y')  # e.g., "Jan 2024"
+
+        labels.append(month_label)
+        data.append(stats_dict.get(month_key, 0))
+
+    return JsonResponse({
+        'labels': labels,
+        'data': data
+    })
+
+
+@login_required
+def search_stats(request):
+    """View to display search statistics"""
+    from .models import SearchRecord
+    from django.db.models import Count, Sum, Avg
+
+    group_name = ''
+
+    # Set demo group if user is not authenticated or doesn't have groups
+    if hasattr(request.user, 'groups') and request.user.groups.exists():
+        group_name = request.user.groups.all()[0].name
+        if not group_name in group_list:
+            group_name = ''
+    else:
+        # Use demo group for UI testing
+        group_name = 'DEMO'
+
+    # Get total search count
+    total_searches = SearchRecord.get_total_searches()
+
+    # Get user's search count
+    user_searches = SearchRecord.get_user_search_count(request.user)
+
+    # Get department search count
+    department_searches = SearchRecord.get_department_search_count(group_name) if group_name else 0
+
+    # Get top keywords (overall)
+    top_keywords = SearchRecord.get_top_keywords(limit=10)
+
+    # Get user's top keywords
+    user_top_keywords = SearchRecord.get_top_keywords(limit=10, user=request.user)
+
+    # Get recent searches
+    recent_searches = SearchRecord.objects.filter(user=request.user).order_by('-searched_at')[:10]
+
+    # Get aggregated statistics
+    stats = SearchRecord.objects.aggregate(
+        total_results=Sum('result_count'),
+        avg_results=Avg('result_count'),
+        avg_time=Avg('search_time')
+    )
+
+    # Get user statistics
+    user_stats = SearchRecord.objects.filter(user=request.user).aggregate(
+        total_results=Sum('result_count'),
+        avg_results=Avg('result_count'),
+        avg_time=Avg('search_time')
+    )
+
+    context = {
+        'total_searches': total_searches,
+        'user_searches': user_searches,
+        'department_searches': department_searches,
+        'top_keywords': top_keywords,
+        'user_top_keywords': user_top_keywords,
+        'recent_searches': recent_searches,
+        'stats': stats,
+        'user_stats': user_stats,
+        'group_name': group_name
+    }
+
+    return render(request, 'ps_data/search_stats.html', context)
+
+
+@login_required
+def search_chart_data(request):
+    """API endpoint to provide monthly search data for charts"""
+    from django.http import JsonResponse
+    from .models import SearchRecord
+    from datetime import datetime, timedelta
+    from django.utils import timezone
+
+    # Get filter parameter (all, user, or department)
+    filter_type = request.GET.get('filter', 'user')
+
+    # Get monthly statistics based on filter
+    if filter_type == 'all':
+        monthly_stats = SearchRecord.get_monthly_stats(months=12)
+    elif filter_type == 'user':
+        monthly_stats = SearchRecord.get_monthly_stats(months=12, user=request.user)
+    else:  # department
+        group_name = ''
+        if hasattr(request.user, 'groups') and request.user.groups.exists():
+            group_name = request.user.groups.all()[0].name
+        monthly_stats = SearchRecord.get_monthly_stats(months=12, department=group_name)
 
     # Prepare data for Chart.js
     labels = []

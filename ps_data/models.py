@@ -77,6 +77,91 @@ class VisitRecord(models.Model):
         ).order_by('month')
 
         return monthly_data
+
+
+class SearchRecord(models.Model):
+    """Model to track individual search records for analytics"""
+    keyword = models.CharField(max_length=255, help_text="Search keyword", db_index=True)
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, help_text="User who performed the search", db_index=True)
+    department = models.CharField(max_length=50, help_text="User's department", db_index=True)
+    searched_at = models.DateTimeField(auto_now_add=True, help_text="Search timestamp", db_index=True)
+    result_count = models.IntegerField(default=0, help_text="Number of results returned")
+    search_time = models.FloatField(default=0.0, help_text="Search execution time in seconds")
+
+    class Meta:
+        verbose_name = "Search Record"
+        verbose_name_plural = "Search Records"
+        ordering = ['-searched_at']
+        indexes = [
+            models.Index(fields=['user', 'searched_at']),
+            models.Index(fields=['department', 'searched_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.keyword} - {self.searched_at}"
+
+    @classmethod
+    def get_total_searches(cls):
+        """Get total number of searches"""
+        return cls.objects.count()
+
+    @classmethod
+    def get_user_search_count(cls, user):
+        """Get total searches for a specific user"""
+        return cls.objects.filter(user=user).count()
+
+    @classmethod
+    def get_department_search_count(cls, department):
+        """Get total searches for a specific department"""
+        return cls.objects.filter(department=department).count()
+
+    @classmethod
+    def get_monthly_stats(cls, months=12, user=None, department=None):
+        """Get search counts grouped by month for the last N months"""
+        from django.db.models import Count, Sum, Avg
+        from django.db.models.functions import TruncMonth
+        from datetime import datetime, timedelta
+        from django.utils import timezone
+
+        # Get date range
+        end_date = timezone.now()
+        start_date = end_date - timedelta(days=months * 30)
+
+        # Base query
+        queryset = cls.objects.filter(searched_at__gte=start_date)
+
+        # Apply filters
+        if user:
+            queryset = queryset.filter(user=user)
+        if department:
+            queryset = queryset.filter(department=department)
+
+        # Query searches grouped by month
+        monthly_data = queryset.annotate(
+            month=TruncMonth('searched_at')
+        ).values('month').annotate(
+            count=Count('id'),
+            total_results=Sum('result_count'),
+            avg_time=Avg('search_time')
+        ).order_by('month')
+
+        return monthly_data
+
+    @classmethod
+    def get_top_keywords(cls, limit=10, user=None, department=None):
+        """Get most searched keywords"""
+        from django.db.models import Count
+
+        queryset = cls.objects.all()
+
+        if user:
+            queryset = queryset.filter(user=user)
+        if department:
+            queryset = queryset.filter(department=department)
+
+        return queryset.values('keyword').annotate(
+            count=Count('keyword')
+        ).order_by('-count')[:limit]
 # Unable to inspect table 'auth_group'
 # The error was: __new__() missing 1 required positional argument: 'collation'
 # Unable to inspect table 'auth_group_permissions'
