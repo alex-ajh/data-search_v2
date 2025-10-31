@@ -181,7 +181,7 @@
                                                     {{ result.path }}
                                                 </div>
                                                 <div class="btn-group" role="group">
-                                                    <button class="btn btn-sm btn-outline-success" onclick="openFolder('{{result.path|replace_slash}}')" title="폴더 열기">
+                                                    <button class="btn btn-sm btn-outline-success" data-path="{{result.path|replace_slash}}" onclick="openFolder(this.getAttribute('data-path'))" title="폴더 열기">
                                                         <i class="bi bi-folder-open"></i>
                                                     </button>
                                                     <button class="btn btn-sm btn-outline-primary" onclick="clipboard('{{result.path|replace_slash}}', this)" title="경로 복사">
@@ -375,7 +375,9 @@
         function openFolder(path) {
             // Use the custom explorer:// protocol
             // This requires the protocol handler to be installed (install.reg)
-            window.location.href = 'explorer://open?' + path;
+            // URL encode the path to handle special characters (&, spaces, Korean)
+            const encodedPath = encodeURIComponent(path);
+            window.location.href = 'explorer://open?' + encodedPath;
         }
 
         // Search history management
