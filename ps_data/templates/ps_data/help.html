@@ -161,7 +161,14 @@
                 <div class="card-body">
                     <ol class="step-list">
                         <li class="mb-3">
-                            <strong>경로 복사:</strong> 검색 결과에서 파일 경로 옆의
+                            <strong>방법 1 - 폴더 열기 버튼 (권장):</strong> 검색 결과에서
+                            <button class="btn btn-sm btn-outline-success">
+                                <i class="bi bi-folder-open"></i>
+                            </button>
+                            버튼 클릭 (아래 "원클릭 폴더 열기" 설치 필요)
+                        </li>
+                        <li class="mb-3">
+                            <strong>방법 2 - 경로 복사:</strong> 검색 결과에서 파일 경로 옆의
                             <button class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-clipboard"></i>
                             </button>
@@ -179,6 +186,77 @@
                             <strong>파일 열기:</strong> 해당 위치에서 파일을 확인하고 실행
                         </li>
                     </ol>
+                </div>
+            </div>
+
+            <!-- Folder Opener Installation -->
+            <div class="card shadow-sm mb-4 border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-download"></i> 원클릭 폴더 열기 기능 설치
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>한 번만 설치하면</strong> 검색 결과에서 <i class="bi bi-folder-open"></i> 버튼 클릭 시 바로 폴더가 열립니다!
+                    </div>
+
+                    <h6 class="fw-bold mb-3"><i class="bi bi-file-earmark-arrow-down"></i> 다운로드 파일</h6>
+                    <div class="row mb-4">
+                        <div class="col-md-4 mb-2">
+                            <a href="{% url 'ps_data:download_folder_opener' filename='FolderOpener.ps1' %}" class="btn btn-primary w-100" download>
+                                <i class="bi bi-file-code"></i> FolderOpener.ps1
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="{% url 'ps_data:download_folder_opener' filename='install.reg' %}" class="btn btn-success w-100" download>
+                                <i class="bi bi-gear"></i> install.reg
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="{% url 'ps_data:download_folder_opener' filename='uninstall.reg' %}" class="btn btn-danger w-100" download>
+                                <i class="bi bi-x-circle"></i> uninstall.reg
+                            </a>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-3"><i class="bi bi-list-ol"></i> 설치 방법 (3단계)</h6>
+                    <ol class="step-list">
+                        <li class="mb-3">
+                            <strong>파일 복사:</strong> 다운로드한 <code>FolderOpener.ps1</code>을 <code>C:\data_search\</code> 폴더에 복사
+                            <div class="example-box mt-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-folder"></i> C:\data_search\ 폴더가 없으면 새로 만드세요
+                                </small>
+                            </div>
+                        </li>
+                        <li class="mb-3">
+                            <strong>레지스트리 등록:</strong> <code>install.reg</code> 파일을 더블클릭 → "예" 클릭
+                            <div class="example-box mt-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-shield-check"></i> Windows 보안 경고가 나타나면 "예"를 클릭하세요
+                                </small>
+                            </div>
+                        </li>
+                        <li class="mb-3">
+                            <strong>완료:</strong> 이제 검색 결과에서 <button class="btn btn-sm btn-outline-success"><i class="bi bi-folder-open"></i></button> 버튼을 클릭하면 폴더가 열립니다!
+                        </li>
+                    </ol>
+
+                    <h6 class="fw-bold mb-3"><i class="bi bi-check-circle"></i> 설치 확인 방법</h6>
+                    <div class="example-box">
+                        <p class="mb-2"><kbd>Win + R</kbd> 누른 후 아래 명령어 입력:</p>
+                        <code>explorer://open?C:\Windows</code>
+                        <small class="text-muted d-block mt-1">
+                            → Windows 폴더가 열리면 설치 성공!
+                        </small>
+                    </div>
+
+                    <div class="alert alert-warning mt-3">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>제거 방법:</strong> <code>uninstall.reg</code> 파일을 더블클릭하면 기능이 제거됩니다.
+                    </div>
                 </div>
             </div>
 
@@ -219,7 +297,7 @@
             <!-- Footer -->
             <div class="text-center text-muted mt-5">
                 <small>
-                    <i class="bi bi-clock"></i> 최근 업데이트: 2021-10-07
+                    <i class="bi bi-clock"></i> 최근 업데이트: 2025-10-31
                 </small>
             </div>
         </div>

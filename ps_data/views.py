@@ -170,6 +170,37 @@ def help(request):
     return render(request, 'ps_data/help.html', context)
 
 
+def download_folder_opener(request, filename):
+    """View to download folder opener files"""
+    import os
+    from django.http import FileResponse, Http404
+    from django.conf import settings
+
+    # Define allowed files
+    allowed_files = {
+        'FolderOpener.ps1': 'FolderOpener.ps1',
+        'install.reg': 'install.reg',
+        'uninstall.reg': 'uninstall.reg'
+    }
+
+    # Check if filename is allowed
+    if filename not in allowed_files:
+        raise Http404("File not found")
+
+    # Get the file path from project root
+    file_path = os.path.join(settings.BASE_DIR.parent, allowed_files[filename])
+
+    # Check if file exists
+    if not os.path.exists(file_path):
+        raise Http404("File not found")
+
+    # Return file as download
+    response = FileResponse(open(file_path, 'rb'))
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    return response
+
+
 @login_required
 def visit_stats(request):
     """View to display visit statistics"""
