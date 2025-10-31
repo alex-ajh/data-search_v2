@@ -177,12 +177,17 @@
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center justify-content-between">
-                                                <div class="text-truncate me-2" style="max-width: 500px;" title="{{ result.path }}">
+                                                <div class="text-truncate me-2" style="max-width: 400px;" title="{{ result.path }}">
                                                     {{ result.path }}
                                                 </div>
-                                                <button class="btn btn-sm btn-outline-primary" onclick="clipboard('{{result.path|replace_slash}}', this)" title="경로 복사">
-                                                    <i class="bi bi-clipboard"></i>
-                                                </button>
+                                                <div class="btn-group" role="group">
+                                                    <button class="btn btn-sm btn-outline-success" onclick="openFolder('{{result.path|replace_slash}}')" title="폴더 열기">
+                                                        <i class="bi bi-folder-open"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-primary" onclick="clipboard('{{result.path|replace_slash}}', this)" title="경로 복사">
+                                                        <i class="bi bi-clipboard"></i>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
@@ -364,6 +369,13 @@
                 button.classList.remove('btn-success');
                 button.classList.add('btn-outline-primary');
             }, 1000);
+        }
+
+        // Open folder using custom protocol handler
+        function openFolder(path) {
+            // Use the custom explorer:// protocol
+            // This requires the protocol handler to be installed (install.reg)
+            window.location.href = 'explorer://open?' + path;
         }
 
         // Search history management
